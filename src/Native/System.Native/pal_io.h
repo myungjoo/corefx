@@ -65,6 +65,7 @@ enum
     PAL_S_IFDIR = 0x4000, // Directory
     PAL_S_IFREG = 0x8000, // Regular file
     PAL_S_IFLNK = 0xA000, // Symbolic link
+    PAL_S_IFSOCK = 0xC000, // Socket
 };
 
 /**
@@ -218,7 +219,8 @@ enum SysConfName : int32_t
  */
 enum PollEvents : int16_t
 {
-    PAL_POLLIN = 0x0001,   /* any readable data available */
+    PAL_POLLIN = 0x0001,   /* non-urgent readable data available */
+    PAL_POLLPRI = 0x0002,  /* urgent readable data available */
     PAL_POLLOUT = 0x0004,  /* data can be written without blocked */
     PAL_POLLERR = 0x0008,  /* an error occurred */
     PAL_POLLHUP = 0x0010,  /* the file descriptor hung up */
@@ -436,13 +438,6 @@ extern "C" int32_t SystemNative_ChMod(const char* path, int32_t mode);
 * Returns 0 for success, -1 for failure. Sets errno for failure.
 */
 extern "C" int32_t SystemNative_FChMod(intptr_t fd, int32_t mode);
-
-/**
- * Create a FIFO (named pipe). Implemented as a shim to mkfifo(3).
- *
- * Returns 0 for success, -1 for failure. Sets errno for failure.
- */
-extern "C" int32_t SystemNative_MkFifo(const char* path, int32_t mode);
 
 /**
  * Flushes all modified data and attribtues of the specified File Descriptor to the storage medium.

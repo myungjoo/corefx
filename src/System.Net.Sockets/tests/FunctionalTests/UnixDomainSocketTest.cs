@@ -24,8 +24,8 @@ namespace System.Net.Sockets.Tests
         [PlatformSpecific(PlatformID.Windows)]
         public void Socket_CreateUnixDomainSocket_Throws_OnWindows()
         {
-            // Throws SocketException with this message "An address incompatible with the requested protocol was used"
-            Assert.Throws<SocketException>(() => new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified));
+            SocketException e = Assert.Throws<SocketException>(() => new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified));
+            Assert.Equal(SocketError.AddressFamilyNotSupported, e.SocketErrorCode);
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace System.Net.Sockets.Tests
                         await complete.Task;
                     }
 
-                    Assert.Equal(SocketError.SocketError, args.SocketError);
+                    Assert.Equal(SocketError.AddressNotAvailable, args.SocketError);
                 }
             }
             finally
@@ -150,6 +150,87 @@ namespace System.Net.Sockets.Tests
             {
                 try { File.Delete(path); }
                 catch { }
+            }
+        }
+
+        [Fact]
+        [PlatformSpecific(PlatformID.AnyUnix)]
+        public async Task Socket_SendReceiveAsync_Success()
+        {
+            string path = GetRandomNonExistingFilePath();
+            var endPoint = new UnixDomainSocketEndPoint(path);
+            try
+            {
+                using (var server = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
+                using (var client = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
+                {
+                    server.Bind(endPoint);
+                    server.Listen(1);
+
+                    await client.ConnectAsync(endPoint);
+                    using (Socket accepted = await server.AcceptAsync())
+                    {
+                        var data = new byte[1];
+                        for (int i = 0; i < 10; i++)
+                        {
+                            data[0] = (byte)i;
+
+                            await accepted.SendAsync(new ArraySegment<byte>(data), SocketFlags.None);
+                            data[0] = 0;
+
+                            Assert.Equal(1, await client.ReceiveAsync(new ArraySegment<byte>(data), SocketFlags.None));
+                            Assert.Equal(i, data[0]);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                try { File.Delete(path); }
+                catch { }
+            }
+        }
+
+        [Fact]
+        [PlatformSpecific(PlatformID.AnyUnix)] 
+        public void ConcurrentSendReceive()
+        {
+            using (Socket server = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
+            using (Socket client = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
+            {
+                const int Iters = 500;
+                const int Chunk = 1024;
+                byte[] sendData = new byte[Chunk * Iters];
+                byte[] receiveData = new byte[sendData.Length];
+                new Random().NextBytes(sendData);
+
+                string path = GetRandomNonExistingFilePath();
+
+                server.Bind(new UnixDomainSocketEndPoint(path));
+                server.Listen(1);
+
+                Task<Socket> acceptTask = server.AcceptAsync();
+                client.Connect(new UnixDomainSocketEndPoint(path));
+                acceptTask.Wait();
+                Socket accepted = acceptTask.Result;
+
+                Task[] writes = new Task[Iters];
+                Task<int>[] reads = new Task<int>[Iters];
+                for (int i = 0; i < Iters; i++)
+                {
+                    writes[i] = client.SendAsync(new ArraySegment<byte>(sendData, i * Chunk, Chunk), SocketFlags.None);
+                }
+                for (int i = 0; i < Iters; i++)
+                {
+                    reads[i] = accepted.ReceiveAsync(new ArraySegment<byte>(receiveData, i * Chunk, Chunk), SocketFlags.None);
+                }
+                Task.WaitAll(writes);
+                Task.WaitAll(reads);
+
+                for (int i = 0; i < sendData.Length; i++)
+                {
+                    Assert.True(sendData[i] == receiveData[i], $"Different at {i}");
+                }
             }
         }
 
