@@ -339,7 +339,7 @@ namespace System.IO.Pipes
 
         private static string EnsurePipeDirectoryPath()
         {
-            const string PipesFeatureName = "pipes";
+            const string PipesFeatureName = "pipe";
 
             // Ideally this would simply use PersistedFiles.GetTempFeatureDirectory(PipesFeatureName) and then
             // Directory.CreateDirectory to ensure it exists.  But this assembly doesn't reference System.IO.FileSystem.
@@ -347,7 +347,7 @@ namespace System.IO.Pipes
             // to create each of the individual directories as part of the path.  We instead access the named portions 
             // of the path directly and do the building of the path and directory structure manually.
 
-            // First ensure we know what the full path should be, e.g. /tmp/.dotnet/corefx/pipes/
+            // First ensure we know what the full path should be, e.g. /tmp/.dotnet/corefx/pipe/
             string fullPath = s_pipeDirectoryPath;
             string tempPath = null;
             if (fullPath == null)
@@ -383,7 +383,7 @@ namespace System.IO.Pipes
                 partialPath = Path.Combine(partialPath, PersistedFiles.SecondLevelDirectory);
                 CreateDirectory(partialPath);
 
-                // Create /tmp/.dotnet/corefx/pipes/ if it doesn't exist
+                // Create /tmp/.dotnet/corefx/pipe/ if it doesn't exist
                 CreateDirectory(fullPath);
             }
 
@@ -427,7 +427,7 @@ namespace System.IO.Pipes
             writer.SetHandle(fds[Interop.Sys.WriteEndOfPipe]);
         }
 
-        private int CheckPipeCall(int result)
+        internal int CheckPipeCall(int result)
         {
             if (result == -1)
             {
@@ -442,30 +442,15 @@ namespace System.IO.Pipes
             return result;
         }
 
-        internal void InitializeBufferSize(SafePipeHandle handle, int bufferSize)
-        {
-            // bufferSize is just advisory and ignored if platform does not support setting pipe capacity via fcntl.
-            if (bufferSize > 0 && Interop.Sys.Fcntl.CanGetSetPipeSz)
-            {
-                CheckPipeCall(Interop.Sys.Fcntl.SetPipeSz(handle, bufferSize));
-            }
-        }
-
         private int GetPipeBufferSize()
         {
-            if (_handle?.NamedPipeSocket != null)
-            {
-                return _handle.NamedPipeSocket.ReceiveBufferSize;
-            }
-
             if (!Interop.Sys.Fcntl.CanGetSetPipeSz)
             {
                 throw new PlatformNotSupportedException();
             }
 
             // If we have a handle, get the capacity of the pipe (there's no distinction between in/out direction).
-            // If we don't, the pipe has been created but not yet connected (in the case of named pipes),
-            // so just return the buffer size that was passed to the constructor.
+            // If we don't, just return the buffer size that was passed to the constructor.
             return _handle != null ?
                 CheckPipeCall(Interop.Sys.Fcntl.GetPipeSz(_handle)) :
                 _outBufferSize;
