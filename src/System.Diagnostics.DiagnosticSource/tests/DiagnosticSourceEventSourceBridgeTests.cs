@@ -151,7 +151,7 @@ namespace System.Diagnostics.Tests
         }
 
         /// <summary>
-        /// Tests what happens when you wildcard the source name (empy string)
+        /// Tests what happens when you wildcard the source name (empty string)
         /// </summary>
         [Fact]
         public void TestWildCardSourceName()
@@ -162,7 +162,7 @@ namespace System.Diagnostics.Tests
             {
                 eventSourceListener.Filter = (DiagnosticSourceEvent evnt) => evnt.SourceName.StartsWith("TestWildCardSourceName");
 
-                // Turn On Everything.  Note that because of concurent testing, we may get other sources as well.
+                // Turn On Everything.  Note that because of concurrent testing, we may get other sources as well.
                 // but we filter them out because we set eventSourceListener.Filter.   
                 eventSourceListener.Enable("");
 
@@ -265,7 +265,7 @@ namespace System.Diagnostics.Tests
 
         /// <summary>
         /// Test what happens when there are nulls passed in the event payloads
-        /// Bascially strings get turned into empty strings and other nulls are typically
+        /// Basically strings get turned into empty strings and other nulls are typically
         /// ignored.  
         /// </summary>
         [Fact]
@@ -340,19 +340,19 @@ namespace System.Diagnostics.Tests
         }
 
         /// <summary>
-        /// Tests the feature that supresses the implicit inclusion of serialable properties 
+        /// Tests the feature that suppresses the implicit inclusion of serialable properties 
         /// of the payload object.  
         /// </summary>
         [Fact]
         public void TestNoImplicitTransforms()
         {
             using (var eventSourceListener = new TestDiagnosticSourceEventListener())
-            using (var diagnosticSourceListener = new DiagnosticListener("TestNoImplictTransformsSource"))
+            using (var diagnosticSourceListener = new DiagnosticListener("TestNoImplicitTransformsSource"))
             {
                 Assert.Equal(0, eventSourceListener.EventCount);
 
-                // use the - prefix to supress the implicit properties.  Thus you should only get propStr and Url.  
-                eventSourceListener.Enable("TestNoImplictTransformsSource/TestEvent1:-propStr;cls.Url");
+                // use the - prefix to suppress the implicit properties.  Thus you should only get propStr and Url.  
+                eventSourceListener.Enable("TestNoImplicitTransformsSource/TestEvent1:-propStr;cls.Url");
 
                 /***************************************************************************************/
                 // Emit an event that matches the first pattern. 
@@ -361,7 +361,7 @@ namespace System.Diagnostics.Tests
                     diagnosticSourceListener.Write("TestEvent1", new { propStr = "hi", propInt = 4, cls = val, propStr2 = "there" });
 
                 Assert.Equal(1, eventSourceListener.EventCount); // Exactly one more event has been emitted.
-                Assert.Equal("TestNoImplictTransformsSource", eventSourceListener.LastEvent.SourceName);
+                Assert.Equal("TestNoImplicitTransformsSource", eventSourceListener.LastEvent.SourceName);
                 Assert.Equal("TestEvent1", eventSourceListener.LastEvent.EventName);
                 Assert.Equal(2, eventSourceListener.LastEvent.Arguments.Count);
                 Assert.Equal("hi", eventSourceListener.LastEvent.Arguments["propStr"]);
@@ -561,7 +561,7 @@ namespace System.Diagnostics.Tests
         }
 
         /// <summary>
-        /// Cleans this class up.  Among other things diables the DiagnosticSources being listened to.  
+        /// Cleans this class up.  Among other things disables the DiagnosticSources being listened to.  
         /// </summary>
         public override void Dispose()
         {

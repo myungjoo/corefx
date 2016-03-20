@@ -130,7 +130,7 @@ namespace System.IO.Packaging
             #region IEnumerator Methods
 
             /// <summary>
-            /// This method keeps moving the enumerator the the next position till
+            /// This method keeps moving the enumerator the next position till
             /// a relationship is found with the matching Name
             /// </summary>
             /// <returns>Bool indicating if the enumerator successfully moved to the next position</returns>
@@ -158,7 +158,7 @@ namespace System.IO.Packaging
             }
 
             /// <summary>
-            /// Resets the enumerator to the begining
+            /// Resets the enumerator to the beginning
             /// </summary>
             void IEnumerator.Reset()
             {

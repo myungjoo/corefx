@@ -258,7 +258,7 @@ namespace System.Globalization.Tests
         }
         
         [Theory]
-        [MemberData("Compare_TestData")]
+        [MemberData(nameof(Compare_TestData))]
         public void Compare(CompareInfo compareInfo, string string1, string string2, CompareOptions options, int expected)
         {
             if (options == CompareOptions.None)
@@ -352,7 +352,7 @@ namespace System.Globalization.Tests
                     return ch;
                 }
             }
-            return char.MinValue; // There are no unassigned unicode characters from \u0000 - \uFFFF
+            return char.MinValue; // There are no unassigned Unicode characters from \u0000 - \uFFFF
         }
 
         private static int PredictCompareOrdinalResult(string string1, string string2)

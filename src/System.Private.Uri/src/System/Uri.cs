@@ -942,7 +942,7 @@ namespace System
             else
             {
                 // Return unescaped canonical path
-                // Note we cannot call GetParts here because it has circular dependancy on GelLocalPath method
+                // Note we cannot call GetParts here because it has circular dependency on GelLocalPath method
                 return GetUnescapedParts(UriComponents.Path | UriComponents.KeepDelimiter, UriFormat.Unescaped);
             }
         }
@@ -1941,7 +1941,7 @@ namespace System
 
                     if (_syntax.InFact(UriSyntaxFlags.MustHaveAuthority))
                     {
-                        // (V1.0 compatiblity) This will allow http:\\ http:\/ http:/\
+                        // (V1.0 compatibility) This will allow http:\\ http:\/ http:/\
                         if ((first == '/' || first == '\\') && (second == '/' || second == '\\'))
                         {
                             _flags |= Flags.AuthorityFound;
@@ -2029,7 +2029,7 @@ namespace System
             if (newHost != null)
                 _string = newHost;
 
-            // conditions where we dont need to go to parseremaining, so we copy the rest of the
+            // conditions where we don't need to go to parseremaining, so we copy the rest of the
             // original string.. and switch offsets
             if ((!_iriParsing && AllowIdn && (((_flags & Flags.IdnHost) != 0) || ((_flags & Flags.UnicodeHost) != 0))) ||
                 (_iriParsing && ((_flags & Flags.HasUnicode) == 0) && AllowIdn && ((_flags & Flags.IdnHost) != 0)))
@@ -3219,7 +3219,7 @@ namespace System
                 // ATTN:
                 // This may render problems for unknown schemes, but in general for an authority based Uri
                 // (that has slashes) a path should start with "/"
-                // This becomes more interesting knowning how a file uri is used in "file://c:/path"
+                // This becomes more interesting knowing how a file uri is used in "file://c:/path"
                 // It will be converted to file:///c:/path
                 //
                 // However, even more interesting is that vsmacros://c:\path will not add the third slash in the _canoical_ case

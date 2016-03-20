@@ -4,10 +4,8 @@
 
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Win32.SafeHandles;
 using Xunit;
 
 namespace System.IO.Pipes.Tests
@@ -37,7 +35,7 @@ namespace System.IO.Pipes.Tests
                 var ctx = new CancellationTokenSource();
                 Assert.Throws<TimeoutException>(() => client.Connect(60));  // 60 to be over internal 50 interval
                 await Assert.ThrowsAsync<TimeoutException>(() => client.ConnectAsync(50));
-                await Assert.ThrowsAsync<TimeoutException>(() => client.ConnectAsync(60, ctx.Token)); // testing Token overload; ctx is not cancelled in this test
+                await Assert.ThrowsAsync<TimeoutException>(() => client.ConnectAsync(60, ctx.Token)); // testing Token overload; ctx is not canceled in this test
             }
         }
 
@@ -412,6 +410,51 @@ namespace System.IO.Pipes.Tests
 
                 Assert.Throws<ArgumentOutOfRangeException>(() => server.ReadMode = (PipeTransmissionMode)999);
                 Assert.Throws<ArgumentOutOfRangeException>(() => client.ReadMode = (PipeTransmissionMode)999);
+            }
+        }
+
+        [Fact]
+        [PlatformSpecific(PlatformID.AnyUnix)]
+        public void NameTooLong_MaxLengthPerPlatform()
+        {
+            // Increase a name's length until it fails
+            ArgumentOutOfRangeException e = null;
+            string name = Path.GetRandomFileName();
+            for (int i = 0; ; i++)
+            {
+                try
+                {
+                    name += 'c';
+                    using (var s = new NamedPipeServerStream(name))
+                    using (var c = new NamedPipeClientStream(name))
+                    {
+                        Task t = s.WaitForConnectionAsync();
+                        c.Connect();
+                        t.GetAwaiter().GetResult();
+                    }
+                }
+                catch (ArgumentOutOfRangeException exc)
+                {
+                    e = exc;
+                    break;
+                }
+            }
+            Assert.NotNull(e);
+            Assert.NotNull(e.ActualValue);
+
+            // Validate the length was expected
+            string path = (string)e.ActualValue;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Assert.Equal(108, path.Length);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                Assert.Equal(104, path.Length);
+            }
+            else
+            {
+                Assert.InRange(path.Length, 92, int.MaxValue);
             }
         }
 

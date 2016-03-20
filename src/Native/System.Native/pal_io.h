@@ -87,7 +87,7 @@ enum
     // everywhere.
     PAL_O_ACCESS_MODE_MASK = 0x000F,
 
-    // Flags (combineable)
+    // Flags (combinable)
     // These numeric values are not defined by POSIX and vary across targets.
     PAL_O_CLOEXEC = 0x0010, // Close-on-exec
     PAL_O_CREAT = 0x0020,   // Create file if it doesn't already exist
@@ -237,7 +237,7 @@ enum FileAdvice : int32_t
     PAL_POSIX_FADV_RANDOM = 1,     /* random I/O access */
     PAL_POSIX_FADV_SEQUENTIAL = 2, /* sequential I/O access */
     PAL_POSIX_FADV_WILLNEED = 3,   /* will need specified pages */
-    PAL_POSIX_FADV_DONTNEED = 4,   /* dont need the specified pages */
+    PAL_POSIX_FADV_DONTNEED = 4,   /* don't need the specified pages */
     PAL_POSIX_FADV_NOREUSE = 5,    /* data will only be acessed once */
 };
 
@@ -479,7 +479,7 @@ extern "C" int32_t SystemNative_FnMatch(const char* pattern, const char* path, F
 /**
  * Seek to a specified location within a seekable stream
  *
- * On success, the resulting offet, in bytes, from the begining of the stream; otherwise,
+ * On success, the resulting offet, in bytes, from the beginning of the stream; otherwise,
  * returns -1 and errno is set.
  */
 extern "C" int64_t SystemNative_LSeek(intptr_t fd, int64_t offset, SeekWhence whence);
